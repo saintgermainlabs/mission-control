@@ -44,7 +44,8 @@ services:
       - mission-control-data:/app/data
       - mission-control-workspace:/app/workspace
 
-  restart: "no"
+    # Coolify manages lifecycle; avoid fighting its restart policy
+    restart: "no"
 
 volumes:
   mission-control-data:
