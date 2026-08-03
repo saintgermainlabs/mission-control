@@ -44,7 +44,7 @@ services:
       - mission-control-data:/app/data
       - mission-control-workspace:/app/workspace
 
-    restart: unless-stopped
+  restart: "no"
 
 volumes:
   mission-control-data:
