@@ -13,7 +13,9 @@ services:
 
     volumes:
       - tailscale-state:/var/lib/tailscale
-      - ./tailscale/serve.json:/config/serve.json:ro
+      # Mount the directory (not the file). Binding a missing file makes Docker
+      # create an empty directory named serve.json, which crashes Tailscale Serve.
+      - ./tailscale:/config:ro
       - /dev/net/tun:/dev/net/tun
 
     cap_add:
