@@ -1,8 +1,8 @@
 services:
   tailscale:
     image: tailscale/tailscale:latest
-    container_name: ts-mission-control
     hostname: mission-control
+
     environment:
       TS_AUTHKEY: ${TS_AUTHKEY}
       TS_STATE_DIR: /var/lib/tailscale
@@ -10,39 +10,34 @@ services:
       TS_AUTH_ONCE: "true"
       TS_EXTRA_ARGS: --advertise-tags=tag:container --accept-dns=true
       TS_SERVE_CONFIG: /config/serve.json
+
     volumes:
       - tailscale-state:/var/lib/tailscale
       - ./tailscale/serve.json:/config/serve.json:ro
       - /dev/net/tun:/dev/net/tun
+
     cap_add:
       - NET_ADMIN
       - NET_RAW
+
     restart: unless-stopped
 
   mission-control:
-    container_name: mission-control
     build:
       context: .
       dockerfile: Dockerfile
-    image: mission-control:latest
 
     network_mode: service:tailscale
 
     depends_on:
       - tailscale
 
-    env_file:
-      - path: .env
-        required: false
-
     environment:
       NODE_ENV: production
-
       DATABASE_PATH: /app/data/mission-control.db
       WORKSPACE_BASE_PATH: /app/workspace
       PROJECTS_PATH: /app/workspace/projects
 
-      # OpenClaw gateway over your tailnet
       OPENCLAW_GATEWAY_URL: wss://openclaw.tiger-bushmaster.ts.net
 
     volumes:
