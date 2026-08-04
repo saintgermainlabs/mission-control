@@ -7,7 +7,7 @@ services:
       TS_AUTHKEY: ${TS_AUTHKEY}
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
-      TS_AUTH_ONCE: "true"
+      TS_AUTH_ONCE: true
       TS_EXTRA_ARGS: --advertise-tags=tag:container --accept-dns=true
       TS_SERVE_CONFIG: /config/serve.json
 
@@ -48,7 +48,25 @@ services:
 
     # Coolify manages lifecycle; avoid fighting its restart policy
     restart: "no"
-
+configs:
+  mission-control-tailscale-serve:
+    content: |
+      {
+        "TCP": {
+          "443": {
+            "HTTPS": true
+          }
+        },
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": {
+              "/": {
+                "Proxy": "http://127.0.0.1:4000"
+              }
+            }
+          }
+        }
+      }
 volumes:
   mission-control-data:
   mission-control-workspace:
