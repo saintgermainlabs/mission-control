@@ -9,7 +9,7 @@ services:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
       - 'TS_EXTRA_ARGS=--advertise-tags=tag:container --accept-dns=true'
-      - APP_PORT=3000
+      - APP_PORT=4000
     volumes:
       - 'tailscale-state:/var/lib/tailscale'
       - '/dev/net/tun:/dev/net/tun'
