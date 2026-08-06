@@ -1,27 +1,24 @@
 services:
   tailscale:
-    image: tailscale/tailscale:latest
-    hostname: mission-control
-
+    image: 'ghcr.io/saintgermainlabs/tailscale-app-sidecar:latest'
+    hostname: docmost
     environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: "false"
-      TS_AUTH_ONCE: true
-      TS_EXTRA_ARGS: --advertise-tags=tag:container --accept-dns=true
-      TS_SERVE_CONFIG: /config/serve.json
-
+      - 'TS_AUTHKEY=${TS_AUTHKEY}'
+      - TS_HOSTNAME=docmost
+      - TS_AUTH_ONCE=true
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - 'TS_EXTRA_ARGS=--advertise-tags=tag:container --accept-dns=true'
+      - APP_PORT=3000
     volumes:
-      - tailscale-state:/var/lib/tailscale
-      # Mount the directory (not the file). Binding a missing file makes Docker
-      # create an empty directory named serve.json, which crashes Tailscale Serve.
-      - ./tailscale:/config:ro
-      - /dev/net/tun:/dev/net/tun
-
+      - 'tailscale-state:/var/lib/tailscale'
+      - '/dev/net/tun:/dev/net/tun'
     cap_add:
       - NET_ADMIN
       - NET_RAW
-
+    labels:
+      - app.name=mission-control
+      - app.component=tailscale-sidecar
     restart: unless-stopped
 
   mission-control:
@@ -48,25 +45,7 @@ services:
 
     # Coolify manages lifecycle; avoid fighting its restart policy
     restart: "no"
-configs:
-  mission-control-tailscale-serve:
-    content: |
-      {
-        "TCP": {
-          "443": {
-            "HTTPS": true
-          }
-        },
-        "Web": {
-          "$${TS_CERT_DOMAIN}:443": {
-            "Handlers": {
-              "/": {
-                "Proxy": "http://127.0.0.1:4000"
-              }
-            }
-          }
-        }
-      }
+
 volumes:
   mission-control-data:
   mission-control-workspace:
