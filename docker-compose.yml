@@ -2,7 +2,6 @@ services:
   tailscale:
     image: tailscale/tailscale:latest
     hostname: mission-control
-
     environment:
       TS_AUTHKEY: ${TS_AUTHKEY}
       TS_STATE_DIR: /var/lib/tailscale
@@ -10,16 +9,16 @@ services:
       TS_AUTH_ONCE: "true"
       TS_EXTRA_ARGS: --advertise-tags=tag:container --accept-dns=true
       TS_SERVE_CONFIG: /config/serve.json
-
     volumes:
       - tailscale-state:/var/lib/tailscale
-      - ./tailscale/serve.json:/config/serve.json:ro
+      - ./tailscale:/config:ro
       - /dev/net/tun:/dev/net/tun
-
     cap_add:
       - NET_ADMIN
       - NET_RAW
-
+    labels:
+      - app.name=mission-control
+      - app.component=tailscale-sidecar
     restart: unless-stopped
 
   mission-control:
@@ -37,12 +36,17 @@ services:
       DATABASE_PATH: /app/data/mission-control.db
       WORKSPACE_BASE_PATH: /app/workspace
       PROJECTS_PATH: /app/workspace/projects
-
+      MISSION_CONTROL_URL: https://mission-control.tiger-bushmaster.ts.net
       OPENCLAW_GATEWAY_URL: wss://openclaw.tiger-bushmaster.ts.net
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
 
     volumes:
       - mission-control-data:/app/data
       - mission-control-workspace:/app/workspace
+
+    labels:
+      - app.name=mission-control
+      - app.component=application
 
     # Coolify manages lifecycle; avoid fighting its restart policy
     restart: "no"
